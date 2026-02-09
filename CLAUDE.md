@@ -27,6 +27,7 @@ VideoDownloader/
 ├── desktop/                    # Application source
 │   ├── main.py                 # Entry point — detects tkinter, launches GUI
 │   ├── main_app.py             # Full GUI application (~52KB, single-file)
+│   ├── cli.py                  # Headless CLI — scriptable yt-dlp downloads (no GUI)
 │   ├── launcher.py             # Simple subprocess launcher
 │   └── launcher_macos.py       # macOS-specific tkinter fix launcher
 ├── scripts/
@@ -46,12 +47,16 @@ VideoDownloader/
 # First-time setup
 ./scripts/setup.sh
 
-# Launch
+# Launch GUI
 ./scripts/run-desktop.sh
 
 # Or directly
 source venv/bin/activate
 python desktop/main.py
+
+# Headless CLI (no GUI)
+python desktop/cli.py info "URL"
+python desktop/cli.py download "URL" --quality best --format mp4
 ```
 
 ## Architecture Notes
@@ -61,13 +66,17 @@ python desktop/main.py
 - Settings persist as JSON in the user's home directory.
 - macOS has a known tkinter issue with Homebrew Python; the launcher chain (`main.py` -> `launcher_macos.py`) handles this automatically.
 
-## Relationship to VideoToTranscript
+## Relationship to Video Pipeline
 
-VideoDownloader and VideoToTranscript form a two-step pipeline:
+VideoDownloader is part of a three-project pipeline orchestrated by [video-pipeline](https://github.com/blueOctopusAI/video-pipeline):
+
 1. **VideoDownloader** -- download video/audio files from any platform
 2. **VideoToTranscript** -- generate transcripts from those files
+3. **video-pipeline** -- orchestrates both + routes transcripts to destination projects
 
-Both are SUPPORTING tier projects in the Blue Octopus portfolio. They feed content into the intelligence-hub knowledge base (transcripts go to `knowledge/transcripts/`).
+The `desktop/cli.py` is used by video-pipeline's downloader module. The video-pipeline project also has its own built-in yt-dlp downloader for standalone operation.
+
+Both VideoDownloader and VideoToTranscript are SUPPORTING tier projects in the Blue Octopus portfolio.
 
 ## Development Notes
 

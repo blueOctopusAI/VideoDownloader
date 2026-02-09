@@ -60,7 +60,7 @@ A modern, beautiful desktop application for downloading videos from YouTube, Tik
 
 ### One-Line Setup (macOS/Linux)
 ```bash
-chmod +x run-desktop.sh && ./run-desktop.sh
+chmod +x scripts/run-desktop.sh && ./scripts/run-desktop.sh
 ```
 
 ## 📖 Usage
@@ -134,12 +134,19 @@ Access via the ⚙️ Settings button:
 ```
 VideoDownloader/
 ├── desktop/
-│   ├── main.py              # Main application
-│   └── launcher.py          # Simple launcher
+│   ├── main.py              # GUI entry point
+│   ├── main_app.py          # Full GUI application
+│   ├── cli.py               # Headless CLI (no GUI required)
+│   ├── launcher.py          # Simple launcher
+│   └── launcher_macos.py    # macOS tkinter fix
+├── scripts/
+│   ├── run-desktop.sh       # Launch script
+│   ├── setup.sh             # First-time setup
+│   └── fix-tkinter.sh       # macOS tkinter fix
+├── docs/
+│   └── README.md            # This file
 ├── venv/                    # Python virtual environment
-├── desktop_requirements.txt # Python dependencies
-├── run-desktop.sh          # Launch script
-└── README.md               # This file
+└── desktop_requirements.txt # Python dependencies
 ```
 
 ### Performance
@@ -167,16 +174,53 @@ VideoDownloader/
 
 ## 🔧 Advanced Usage
 
-### Command Line Options
+### Headless CLI
+
+VideoDownloader includes a headless CLI for scripting and pipeline integration. No GUI required.
+
+```bash
+source venv/bin/activate
+
+# Get video metadata (JSON output)
+python desktop/cli.py info "https://youtube.com/watch?v=..."
+
+# Download a video
+python desktop/cli.py download "https://youtube.com/watch?v=..."
+
+# Download with options
+python desktop/cli.py download "https://youtube.com/watch?v=..." \
+  --quality 720p \
+  --format mp4 \
+  --output ~/Downloads/
+
+# Download audio only
+python desktop/cli.py download "https://youtube.com/watch?v=..." --audio-only
+```
+
+**CLI Options:**
+
+| Command | Description |
+|---------|-------------|
+| `info URL` | Print video metadata as JSON (title, duration, uploader, etc.) |
+| `download URL` | Download a video/audio file |
+
+**Download Options:**
+
+| Flag | Values | Default | Description |
+|------|--------|---------|-------------|
+| `--quality` | `best`, `worst`, `720p`, `480p`, `360p` | `best` | Video quality |
+| `--format` | `mp4`, `webm`, `mkv`, `any` | `mp4` | Output format |
+| `--output, -o` | directory path | `~/Downloads/VideoDownloader/` | Save location |
+| `--audio-only` | flag | off | Extract audio only |
+
+The CLI reads settings from `~/.videodownloader_settings.json` (shared with the GUI) but command-line flags override them.
+
+**Pipeline Integration:** This CLI is used by the [video-pipeline](https://github.com/blueOctopusAI/video-pipeline) project for automated download-transcribe-route workflows.
+
+### GUI Launch
 ```bash
 # Direct launch with Python
 python desktop/main.py
-
-# With specific settings
-python desktop/main.py --quality 720p --audio-only
-
-# Debug mode
-python desktop/main.py --debug
 ```
 
 ### Custom Download Directory
